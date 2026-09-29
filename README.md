@@ -7,7 +7,7 @@ developing presentation content with an AI assistant.
 
 Open the Presentation AI Prompt Builder:
 
-ADD_YOUR_GITHUB_PAGES_URL_HERE
+[Here is the Link for the Presentation AI Prompt Builder](https://askara25.github.io/presentation-ai-prompt-builder/)
 
 ## What This Tool Does
 
