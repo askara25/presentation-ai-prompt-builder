@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentation AI Prompt Builder</title>
+  <style>
+    :root {
+      --navy:#102a43; --blue:#1769e0; --blue2:#0e56c5; --green:#16835f;
+      --bg:#eef3f9; --card:#ffffff; --soft:#f5f8fc; --line:#dce5ef;
+      --text:#183247; --muted:#60758a; --danger:#b42318; --shadow:0 18px 55px rgba(16,42,67,.12);
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Arial,sans-serif;line-height:1.48}
+    button,input,textarea,select{font:inherit}.shell{max-width:980px;margin:32px auto;padding:0 16px 48px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+    .hero{padding:32px;background:linear-gradient(135deg,#0d4fa8,#1769e0);color:#fff}
+    .hero h1{margin:0 0 8px;font-size:clamp(1.65rem,4vw,2.35rem)}.hero p{margin:0;max-width:760px;opacity:.96}
+    .content{padding:28px}.screen{display:none}.screen.active{display:block}
+    .workflow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:24px 0}
+    .flow{background:#fff;color:var(--navy);border-radius:14px;padding:14px 10px;text-align:center;font-size:.86rem;min-height:88px;display:flex;flex-direction:column;justify-content:center}
+    .flow b{display:block;color:var(--blue);font-size:1rem;margin-bottom:4px}
+    .notice{border-left:4px solid var(--blue);background:#eaf3ff;padding:14px 16px;border-radius:0 12px 12px 0;margin:18px 0}
+    .notice strong{color:var(--navy)}
+    .progress{display:flex;gap:8px;padding:18px 28px;border-bottom:1px solid var(--line);background:#fbfdff;overflow:auto}
+    .step-dot{flex:1;min-width:110px;padding:9px 10px;border-radius:999px;background:#e8eef5;color:#60758a;text-align:center;font-size:.82rem;font-weight:700}
+    .step-dot.active{background:var(--blue);color:#fff}.step-dot.done{background:#dff5ec;color:#0f7151}
+    h2{margin:0 0 6px;color:var(--navy)}.lead{color:var(--muted);margin:0 0 24px}
+    .section{background:var(--soft);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px}
+    .field{margin-bottom:20px}.field:last-child{margin-bottom:0}
+    label.legend{display:block;font-weight:700;color:var(--navy);margin-bottom:6px}.req{color:var(--danger);font-size:.78rem;margin-left:5px}
+    .help{color:var(--muted);font-size:.87rem;margin:0 0 9px}.text,.area,.select{width:100%;border:1px solid #c9d6e5;background:white;border-radius:12px;padding:11px 13px;color:var(--text)}
+    .area{min-height:90px;resize:vertical}.text:focus,.area:focus,.select:focus{outline:3px solid rgba(23,105,224,.18);border-color:var(--blue)}
+    .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .choice{background:#fff;border:1px solid #cfdbe7;border-radius:12px;padding:10px 12px;display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+    .choice:hover{border-color:#7a9cc4;background:#fbfdff}.choice input{margin-top:3px;accent-color:var(--blue)}
+    .choice small{display:block;color:var(--muted)}
+    .inline{display:grid;grid-template-columns:1fr 1fr;gap:15px}.hidden{display:none!important}
+    .actions{display:flex;justify-content:space-between;gap:12px;margin-top:24px;flex-wrap:wrap}
+    .btn{border:0;border-radius:999px;padding:11px 22px;font-weight:700;cursor:pointer}
+    .primary{background:var(--blue);color:#fff}.primary:hover{background:var(--blue2)}.secondary{background:#e8eef5;color:var(--navy)}
+    .success{background:var(--green);color:white}.ghost{background:white;border:1px solid #b9c7d6;color:var(--navy)}
+    .error{color:var(--danger);font-size:.84rem;margin-top:6px;display:none}.invalid{border-color:var(--danger)!important;background:#fff8f7!important}
+    .topic-row{display:flex;gap:8px;margin-bottom:8px}.topic-row input{flex:1}.mini{border:1px solid #c6d3e1;background:white;border-radius:10px;padding:8px 11px;cursor:pointer}
+    .review-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.review-box{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff}
+    .review-box h3{margin:0 0 8px;font-size:1rem;color:var(--navy)}.review-box p{margin:4px 0;font-size:.91rem}
+    .output-wrap{border:1px solid var(--line);border-radius:16px;background:#f7faff;overflow:hidden}
+    #outputPrompt{width:100%;min-height:560px;border:0;padding:18px;background:transparent;resize:vertical;font-family:Consolas,"Courier New",monospace;font-size:.85rem;line-height:1.55;color:#132f45}
+    #outputPrompt:focus{outline:none}.output-actions{display:flex;gap:10px;justify-content:flex-end;padding:12px;border-top:1px solid var(--line);background:white;flex-wrap:wrap}
+    .frameworks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.framework{background:white;border:1px solid var(--line);border-radius:12px;padding:12px}.framework b{color:var(--blue)}
+    .counter{font-size:.82rem;color:var(--muted);text-align:right;margin-top:5px}.toast{position:fixed;right:20px;bottom:20px;background:var(--navy);color:white;padding:11px 18px;border-radius:999px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}
+    details{margin-top:18px;border:1px solid var(--line);border-radius:14px;background:white}summary{cursor:pointer;padding:13px 15px;font-weight:700;color:var(--navy)}details .inside{padding:0 15px 15px;color:var(--muted)}
+    @media(max-width:760px){.workflow{grid-template-columns:1fr}.flow{min-height:auto}.choices,.inline,.review-grid,.frameworks{grid-template-columns:1fr}.content{padding:20px}.progress{padding:14px}.step-dot{min-width:95px}.hero{padding:25px}.actions .btn{flex:1}.output-actions .btn{flex:1}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="card">
+    <div class="hero">
+      <h1>Presentation AI Prompt Builder</h1>
+      <p>Create a compact master prompt, then use it with the AI assistant you already know.</p>
+    </div>
+
+    <section id="welcome" class="screen active">
+      <div class="content">
+        <h2>What is this tool for?</h2>
+        <p class="lead">This tool prepares the strategy and instructions for an AI-assisted presentation. It does not ask you to upload your report here and it does not create a PowerPoint file.</p>
+        <div class="workflow">
+          <div class="flow"><b>1</b>Describe the presentation</div>
+          <div class="flow"><b>2</b>Generate the master prompt</div>
+          <div class="flow"><b>3</b>Paste it into your chosen AI</div>
+          <div class="flow"><b>4</b>Provide a PDF, text, or notes</div>
+          <div class="flow"><b>5</b>Receive presentation content</div>
+        </div>
+        <div class="notice"><strong>Recommended prompt size:</strong> approximately 450 to 750 words before your own answers. This is enough to control the workflow without competing with a long PDF or report.</div>
+        <h2 style="margin-top:24px">The strategy remains strong</h2>
+        <p class="lead">The builder keeps BLUF, SCQA, Minto Pyramid, and Golden Thread. You answer straightforward questions; the generated prompt applies the presentation methods.</p>
+        <div class="frameworks">
+          <div class="framework"><b>BLUF</b><br><small>Lead with the conclusion or decision.</small></div>
+          <div class="framework"><b>SCQA</b><br><small>Frame the situation, complication, question, and answer.</small></div>
+          <div class="framework"><b>Minto</b><br><small>Group the supporting case under the main answer.</small></div>
+          <div class="framework"><b>Golden Thread</b><br><small>Keep every main slide tied to one central question.</small></div>
+        </div>
+        <details><summary>Our 85/15 approach</summary><div class="inside">The builder handles the repeatable presentation structure. You provide the situation-specific context, sensitivities, constraints, and exclusions that only you know.</div></details>
+        <div class="actions" style="justify-content:flex-end"><button class="btn primary" type="button" onclick="startForm()">Start building my prompt</button></div>
+      </div>
+    </section>
+
+    <section id="builder" class="screen">
+      <div class="progress" id="progress"></div>
+      <form id="promptForm" class="content" novalidate>
+        <div class="form-step" data-step="0">
+          <h2>1. Purpose</h2><p class="lead">Define why the presentation exists and what it should achieve.</p>
+          <div class="section">
+            <div class="field"><label class="legend" for="topic">What is the presentation about?<span class="req">Required</span></label><input class="text required" id="topic" placeholder="e.g., Mechanical ventilation proposal for the new operations building"><div class="error">Please enter the presentation topic.</div></div>
+            <div class="field"><label class="legend" for="whyNow">Why is this presentation needed now?<span class="req">Required</span></label><p class="help">Describe the problem, opportunity, request, event, or change.</p><textarea class="area required" id="whyNow" placeholder="e.g., The current design exceeds the approved budget, and management must decide before tender."></textarea><div class="error">Please explain why the presentation is needed.</div></div>
+            <div class="field"><label class="legend">What should happen after the presentation?<span class="req">Required</span></label><div class="choices" id="outcomeChoices"></div><div class="error group-error">Please select the desired outcome.</div></div>
+            <div class="field"><label class="legend" for="decision">What decision or action do you need from the audience?</label><textarea class="area" id="decision" placeholder="e.g., Approve Option B and authorize detailed coordination. Enter 'No decision required' if informational."></textarea></div>
+            <div class="field"><label class="legend">Do you already have a preferred recommendation?</label><div class="choices"><label class="choice"><input type="radio" name="hasRec" value="Yes"><span>Yes</span></label><label class="choice"><input type="radio" name="hasRec" value="No" checked><span>No</span></label><label class="choice"><input type="radio" name="hasRec" value="Compare options"><span>Help compare the options</span></label></div></div>
+            <div class="field hidden" id="recommendationWrap"><label class="legend" for="recommendation">What is your preferred recommendation?</label><textarea class="area" id="recommendation"></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-step hidden" data-step="1">
+          <h2>2. Audience</h2><p class="lead">Help the AI choose the right level, evidence, and narrative.</p>
+          <div class="section">
+            <div class="field"><label class="legend">Who is the main audience?<span class="req">Required</span></label><div class="choices" id="audienceChoices"></div><div class="error group-error">Please select the main audience.</div></div>
+            <div class="inline">
+              <div class="field"><label class="legend" for="familiarity">How familiar are they with the subject?</label><select class="select" id="familiarity"><option>New to the subject</option><option selected>Some familiarity</option><option>Very familiar</option><option>Mixed levels</option><option>Not sure</option></select></div>
+              <div class="field"><label class="legend" for="attitude">How are they likely to respond?</label><select class="select" id="attitude"><option>Supportive</option><option>Neutral</option><option>Skeptical</option><option>Resistant</option><option selected>Mixed or unknown</option></select></div>
+            </div>
+            <div class="field"><label class="legend">What matters most to this audience?<span class="req">Select one to three</span></label><div class="choices" id="priorityChoices"></div><div class="error group-error">Select at least one audience priority.</div></div>
+            <div class="field hidden" id="topPriorityWrap"><label class="legend">Which selected item is the highest priority?</label><div class="choices" id="topPriorityChoices"></div></div>
+          </div>
+        </div>
+
+        <div class="form-step hidden" data-step="2">
+          <h2>3. Constraints and context</h2><p class="lead">Set the timing, technical depth, key coverage, and human context.</p>
+          <div class="section">
+            <div class="inline">
+              <div class="field"><label class="legend" for="duration">Presentation time<span class="req">Required</span></label><select class="select required" id="duration"><option value="">Select time</option><option>5-10 minutes</option><option>11-20 minutes</option><option>21-30 minutes</option><option>31-45 minutes</option><option>46-60 minutes</option><option>More than 60 minutes</option><option>Not decided</option></select><div class="error">Please select the presentation time.</div></div>
+              <div class="field"><label class="legend" for="discussion">Time for questions or discussion</label><select class="select" id="discussion"><option>No separate discussion time</option><option>About 5 minutes</option><option>About 10 minutes</option><option>About 15 minutes</option><option>More than 15 minutes</option><option selected>Let the AI recommend it</option></select></div>
+            </div>
+            <div class="field"><label class="legend" for="technical">How technical should it be?</label><select class="select" id="technical"><option>Executive summary</option><option>Mostly non-technical</option><option selected>Balanced</option><option>Technical</option><option>Detailed technical review</option></select></div>
+            <div class="field"><label class="legend">What topics, sites, options, or workstreams may need coverage?</label><p class="help">You do not need to paste the report. Add only short labels; the AI will confirm the structure after reviewing the source material.</p><div id="topics"></div><button class="mini" type="button" id="addTopic">+ Add another</button></div>
+            <div class="field"><label class="legend" for="sensitive">What should the AI handle carefully?</label><textarea class="area" id="sensitive" placeholder="Sensitive stakeholder concerns, previous decisions, leadership priorities, known objections, or confidential areas."></textarea></div>
+            <div class="field"><label class="legend" for="exclude">What must the AI exclude?</label><textarea class="area" id="exclude" placeholder="e.g., Do not include unapproved cost estimates."></textarea></div>
+            <div class="field"><label class="legend" for="constraints">Other presentation limits or requirements</label><textarea class="area" id="constraints" placeholder="e.g., Maximum 15 main slides; use corporate terminology; include source references."></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-step hidden" data-step="3">
+          <h2>4. AI handover and output</h2><p class="lead">Choose how the AI should receive the evidence and what it should produce.</p>
+          <div class="section">
+            <div class="field"><label class="legend">How are you likely to provide the source material?</label><div class="choices" id="sourceChoices"></div><p class="help">You will provide the material directly to your chosen AI, not to this form.</p></div>
+            <div class="field"><label class="legend">How should the AI use the source material?</label><div class="choices" id="groundingChoices"></div></div>
+            <div class="field"><label class="legend">What should the AI produce?<span class="req">Required</span></label><div class="choices" id="deliverableChoices"></div><div class="error group-error">Select at least one output.</div></div>
+            <div class="inline">
+              <div class="field"><label class="legend" for="detail">Output detail<span class="req">Required</span></label><select class="select" id="detail"><option>Quick outline</option><option selected>Detailed slide plan</option><option>Full presentation draft</option></select></div>
+              <div class="field"><label class="legend" for="tone">Tone</label><select class="select" id="tone"><option>Executive and concise</option><option selected>Professional and clear</option><option>Technical and precise</option><option>Persuasive</option><option>Collaborative</option><option>Educational</option></select></div>
+            </div>
+            <div class="field"><label class="legend" for="finalInstructions">Any final instructions?</label><textarea class="area" id="finalInstructions" placeholder="e.g., Emphasize lifecycle cost and place calculations in the appendix."></textarea></div>
+          </div>
+        </div>
+
+        <div class="form-step hidden" data-step="4">
+          <h2>5. Review</h2><p class="lead">Check the brief before generating the master prompt.</p>
+          <div class="review-grid" id="reviewGrid"></div>
+          <div class="notice"><strong>What happens next:</strong> The generated prompt will tell the AI not to create slides immediately. It will first request and review the PDF, document, text, or notes.</div>
+        </div>
+
+        <div class="form-step hidden" data-step="5">
+          <h2>Your master prompt</h2><p class="lead">Copy this into your chosen AI. Continue in the same conversation when you provide the source material and request revisions.</p>
+          <div class="notice"><strong>Length strategy:</strong> This prompt is intentionally compact. It preserves the workflow, presentation frameworks, accuracy rules, and selected deliverables without repeating explanatory theory.</div>
+          <div class="output-wrap"><textarea id="outputPrompt" readonly></textarea><div class="output-actions"><button type="button" class="btn ghost" id="editBtn">Edit answers</button><button type="button" class="btn secondary" id="downloadBtn">Download prompt</button><button type="button" class="btn success" id="copyBtn">Copy prompt</button></div></div>
+          <div class="counter" id="promptStats"></div>
+          <details><summary>After pasting the prompt</summary><div class="inside">The AI should ask for the source material. Upload a PDF or document, paste selected text, provide notes, or combine these methods. If the source was submitted with the prompt, the AI should review it immediately.</div></details>
+        </div>
+
+        <div class="actions" id="navActions"><button type="button" class="btn secondary" id="backBtn">Back</button><button type="button" class="btn primary" id="nextBtn">Next</button></div>
+      </form>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast">Prompt copied</div>
+<script>
+(() => {
+  const labels = {
+    outcomes:['Approve a proposal or recommendation','Make a decision','Understand an issue or receive an update','Provide feedback or direction','Approve funding or resources','Agree on next steps','Learn a process or technical subject','Discuss options','Other'],
+    audiences:['Board or executive leadership','Senior management','Project or department management','Technical reviewers','Engineers','Operational teams','Client or customer','Government or regulatory body','Investors or external stakeholders','Mixed audience','Other'],
+    priorities:['Cost or return on investment','Schedule or delivery speed','Risk','Safety','Compliance','Quality or reliability','Technical feasibility','Resources and execution','Customer or stakeholder impact','Reputation or strategic alignment','Sustainability','Other'],
+    sources:['Upload a PDF or document','Paste relevant text','Provide notes or context','Use a combination','No source material yet','Decide later'],
+    grounding:['Use only supplied information for factual claims','Identify missing information','Clearly label assumptions','Preserve important technical terminology','Simplify technical language where useful','Highlight conflicting information','Include page or section references where available','Suggest additional supporting evidence'],
+    deliverables:['Presentation strategy summary','Slide-by-slide outline','Slide titles and key messages','Suggested content for each slide','Visual or chart suggestions','Speaker notes','Opening and closing script','Executive summary or one-pager','Appendix structure','Preparation checklist','Anticipated audience questions and answers','Missing-information checklist','Action and next-step summary']
+  };
+  const defaults = {
+    grounding:[0,1,2,3,6], deliverables:[0,1,2,3,4]
+  };
+  function radioHTML(name, arr){return arr.map((x,i)=>`<label class="choice"><input type="radio" name="${name}" value="${x}"><span>${x}</span></label>`).join('')}
+  function checkHTML(name, arr, checked=[]){return arr.map((x,i)=>`<label class="choice"><input type="checkbox" name="${name}" value="${x}" ${checked.includes(i)?'checked':''}><span>${x}</span></label>`).join('')}
+  document.getElementById('outcomeChoices').innerHTML=radioHTML('outcome',labels.outcomes);
+  document.getElementById('audienceChoices').innerHTML=radioHTML('audience',labels.audiences);
+  document.getElementById('priorityChoices').innerHTML=checkHTML('priority',labels.priorities);
+  document.getElementById('sourceChoices').innerHTML=radioHTML('source',labels.sources);
+  document.querySelector('input[name="source"][value="Decide later"]').checked=true;
+  document.getElementById('groundingChoices').innerHTML=checkHTML('grounding',labels.grounding,defaults.grounding);
+  document.getElementById('deliverableChoices').innerHTML=checkHTML('deliverable',labels.deliverables,defaults.deliverables);
+
+  const progressNames=['Purpose','Audience','Context','Output','Review','Prompt'];
+  let step=0;
+  const formSteps=[...document.querySelectorAll('.form-step')];
+  const progress=document.getElementById('progress');
+  progress.innerHTML=progressNames.map((x,i)=>`<div class="step-dot" data-p="${i}">${i+1}. ${x}</div>`).join('');
+  const back=document.getElementById('backBtn'), next=document.getElementById('nextBtn'), nav=document.getElementById('navActions');
+
+  window.startForm=()=>{document.getElementById('welcome').classList.remove('active');document.getElementById('builder').classList.add('active');showStep(0);window.scrollTo({top:0,behavior:'smooth'})};
+  function showStep(n){step=n;formSteps.forEach((el,i)=>el.classList.toggle('hidden',i!==n));document.querySelectorAll('.step-dot').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('done',i<n)});back.style.visibility=n===0?'hidden':'visible';next.textContent=n===4?'Generate master prompt':'Next';nav.classList.toggle('hidden',n===5);if(n===4)buildReview();window.scrollTo({top:0,behavior:'smooth'})}
+  function val(id){return document.getElementById(id).value.trim()}
+  function selected(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:''}
+  function checked(name){return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value)}
+  function validate(){let ok=true;const current=formSteps[step];current.querySelectorAll('.required').forEach(el=>{const good=!!el.value.trim();el.classList.toggle('invalid',!good);const er=el.parentElement.querySelector('.error');if(er)er.style.display=good?'none':'block';if(!good)ok=false});
+    const groupReq={0:['outcome'],1:['audience','priority'],3:['deliverable']};(groupReq[step]||[]).forEach(name=>{const has=checked(name).length>0;const box=current.querySelector(`input[name="${name}"]`)?.closest('.field');const er=box?.querySelector('.group-error');if(er)er.style.display=has?'none':'block';if(!has)ok=false});
+    if(!ok)current.querySelector('.invalid,.error[style*="block"]')?.scrollIntoView({behavior:'smooth',block:'center'});return ok}
+  next.addEventListener('click',()=>{if(!validate())return;if(step===4){generatePrompt();showStep(5)}else showStep(step+1)});back.addEventListener('click',()=>showStep(step-1));
+  document.getElementById('editBtn').addEventListener('click',()=>showStep(0));
+  document.querySelectorAll('input[name="hasRec"]').forEach(x=>x.addEventListener('change',()=>document.getElementById('recommendationWrap').classList.toggle('hidden',selected('hasRec')!=='Yes')));
+  document.querySelectorAll('input[name="priority"]').forEach(x=>x.addEventListener('change',()=>{let arr=checked('priority');if(arr.length>3){x.checked=false;arr=checked('priority');alert('Please select no more than three priorities.')}const wrap=document.getElementById('topPriorityWrap');wrap.classList.toggle('hidden',arr.length<2);document.getElementById('topPriorityChoices').innerHTML=radioHTML('topPriority',arr);if(arr.length)document.querySelector('input[name="topPriority"]')?.setAttribute('checked','checked')}));
+
+  let topicCount=0;function addTopic(value=''){topicCount++;const row=document.createElement('div');row.className='topic-row';row.innerHTML=`<input class="text topic-input" placeholder="Topic, site, option, or workstream" value="${value.replace(/"/g,'&quot;')}"><button type="button" class="mini">Remove</button>`;row.querySelector('button').onclick=()=>row.remove();document.getElementById('topics').appendChild(row)}
+  addTopic();addTopic();addTopic();document.getElementById('addTopic').onclick=()=>addTopic();
+  function topics(){return [...document.querySelectorAll('.topic-input')].map(x=>x.value.trim()).filter(Boolean)}
+  function esc(s){return s||'Not specified'}
+  function buildReview(){const blocks=[
+    ['Purpose',`<p><b>Topic:</b> ${esc(val('topic'))}</p><p><b>Why now:</b> ${esc(val('whyNow'))}</p><p><b>Outcome:</b> ${esc(selected('outcome'))}</p><p><b>Decision:</b> ${esc(val('decision'))}</p>`],
+    ['Audience',`<p><b>Main audience:</b> ${esc(selected('audience'))}</p><p><b>Familiarity:</b> ${val('familiarity')}</p><p><b>Response:</b> ${val('attitude')}</p><p><b>Priorities:</b> ${checked('priority').join(', ')}</p>`],
+    ['Constraints',`<p><b>Time:</b> ${val('duration')}</p><p><b>Discussion:</b> ${val('discussion')}</p><p><b>Technical level:</b> ${val('technical')}</p><p><b>Topics:</b> ${topics().join(', ')||'To be confirmed from source'}</p>`],
+    ['AI output',`<p><b>Source:</b> ${selected('source')}</p><p><b>Detail:</b> ${val('detail')}</p><p><b>Tone:</b> ${val('tone')}</p><p><b>Deliverables:</b> ${checked('deliverable').join(', ')}</p>`]
+  ];document.getElementById('reviewGrid').innerHTML=blocks.map(([h,b])=>`<div class="review-box"><h3>${h}</h3>${b}</div>`).join('')}
+  function generatedGolden(){const topic=val('topic'), outcome=selected('outcome'), priority=selected('topPriority')||checked('priority')[0]||'the audience priorities';return `What should the audience understand or decide about ${topic} to achieve ${outcome.toLowerCase()} while addressing ${priority.toLowerCase()}?`}
+  function generatePrompt(){
+    const dels=checked('deliverable'), grounds=checked('grounding'), tops=topics();
+    const recommendation=selected('hasRec')==='Yes'?val('recommendation'):(selected('hasRec')||'Not specified');
+    const prompt=`Act as a senior presentation strategist. Help the user turn source material into an accurate, audience-focused presentation. Treat this brief as persistent throughout the conversation.
+
+PRESENTATION BRIEF
+Topic: ${val('topic')}
+Why now: ${val('whyNow')}
+Desired outcome: ${selected('outcome')}
+Decision or action required: ${esc(val('decision'))}
+Recommendation status: ${esc(recommendation)}
+Audience: ${selected('audience')}
+Familiarity: ${val('familiarity')}
+Likely response: ${val('attitude')}
+Audience priorities: ${checked('priority').join('; ')}${selected('topPriority')?` (highest: ${selected('topPriority')})`:''}
+Presentation time: ${val('duration')}
+Discussion time: ${val('discussion')}
+Technical level: ${val('technical')}
+Tone: ${val('tone')}
+Potential coverage: ${tops.length?tops.join('; '):'Determine after reviewing the source material'}
+Sensitive context: ${esc(val('sensitive'))}
+Exclude: ${esc(val('exclude'))}
+Other constraints: ${esc(val('constraints'))}
+Additional instructions: ${esc(val('finalInstructions'))}
+
+PRESENTATION FRAMEWORK
+Use these methods together where relevant:
+- Golden Thread: Build the presentation around this central question: “${generatedGolden()}”
+- BLUF: Lead with the conclusion, recommendation, decision, or most important status.
+- SCQA: Establish the Situation, Complication, Question, and Answer concisely.
+- Minto Pyramid: Organise the supporting case into logical groups, each backed by evidence.
+Do not force a framework where it conflicts with the evidence or presentation purpose.
+
+WORKFLOW
+Do not generate the presentation yet. First ask the user to ${selected('source')==='Upload a PDF or document'?'upload the PDF or document':selected('source')==='Paste relevant text'?'paste the relevant text':selected('source')==='Provide notes or context'?'provide their notes or context':'provide source material by uploading a document, pasting relevant text, or sharing notes'}. If source material was supplied with this prompt, review it immediately instead of requesting it again.
+
+After receiving the material:
+1. Identify relevant facts, findings, options, risks, decisions, and evidence.
+2. Check alignment with the brief and identify material contradictions.
+3. Ask only essential follow-up questions; if the material is sufficient, proceed.
+4. Generate the requested presentation content.
+
+ACCURACY
+${grounds.map(x=>'- '+x+'.').join('\n')}
+- Do not invent facts, figures, dates, technical findings, decisions, or stakeholder positions.
+
+OUTPUT
+Detail level: ${val('detail')}.
+Produce:
+${dels.map(x=>'- '+x).join('\n')}
+
+For each main slide, provide a title, one key message, concise content, supporting evidence, suggested visual, and estimated speaking time. Keep every main slide connected to the Golden Thread and move supporting technical detail to the appendix when appropriate.
+
+FIRST RESPONSE
+Do not create slides yet. Request the source material in one concise message and explain the accepted handover options.`;
+    const out=document.getElementById('outputPrompt');out.value=prompt;const words=prompt.trim().split(/\s+/).length;document.getElementById('promptStats').textContent=`${words} words · approximately ${Math.ceil(words*1.35)} tokens before the source material`;
+  }
+  document.getElementById('copyBtn').onclick=async()=>{const text=document.getElementById('outputPrompt').value;try{await navigator.clipboard.writeText(text)}catch(e){document.getElementById('outputPrompt').select();document.execCommand('copy')}const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)};
+  document.getElementById('downloadBtn').onclick=()=>{const blob=new Blob([document.getElementById('outputPrompt').value],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='presentation-master-prompt.txt';a.click();URL.revokeObjectURL(a.href)};
+  document.querySelectorAll('input,textarea,select').forEach(el=>el.addEventListener('input',()=>{el.classList.remove('invalid');const er=el.parentElement.querySelector('.error');if(er)er.style.display='none'}));
+  showStep(0);
+})();
+</script>
+</body>
+</html>
